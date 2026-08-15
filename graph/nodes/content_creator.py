@@ -1,14 +1,12 @@
-"""Drafts platform-specific ad copy for a vacant unit.
+"""Drafts Facebook post copy for a vacant unit.
 
-Falls back to deterministic templates when no ANTHROPIC_API_KEY is
+Falls back to a deterministic template when no ANTHROPIC_API_KEY is
 configured, matching the pattern used throughout this repo (see
-application_parser.py, lead_triage.py). Image generation (the original
-social-media-agents repo used Stability AI for this) is out of scope --
-text copy only.
+application_parser.py, lead_triage.py). Image generation is out of scope
+-- text copy only.
 """
 from __future__ import annotations
 
-import json
 import os
 
 from graph.ad_state import AdState
@@ -19,18 +17,15 @@ except ImportError:  # pragma: no cover - exercised when dependency absent
     anthropic = None
 
 CONTENT_SYSTEM_PROMPT = """\
-You write short listing ads for a residential landlord advertising a
-vacant rental unit. Given the unit details, write ad copy for each
-requested platform:
-- twitter: under 280 characters, punchy, include a call to action.
-- instagram: caption style with line breaks and 3-5 relevant hashtags.
-- linkedin: a few sentences, professional tone, suitable for sharing with
-  a personal/professional network.
+You write a Facebook post advertising a vacant rental unit for a
+residential landlord. Write a few sentences to a short paragraph, friendly
+and inviting, ending with a clear call to action (e.g. "Comment or message
+the page to schedule a tour!"). You may add a few relevant hashtags at the
+end (e.g. #DCRentals). Never invent details (price, availability,
+features) that weren't given.
 
-Never invent details (price, availability, features) that weren't given.
-
-Return ONLY a JSON object whose keys are the requested platform names and
-whose values are the ad copy strings.
+Return only the post text -- no preamble, no JSON, no quotation marks
+around it.
 """
 
 
@@ -47,28 +42,26 @@ def _describe_listing(state: AdState) -> str:
         parts.append(f"bathrooms: {facts['bathrooms']}")
     if facts.get("features"):
         parts.append(f"features: {', '.join(facts['features'])}")
-    parts.append(f"platforms: {', '.join(state['platforms'])}")
     return "\n".join(parts)
 
 
-def _draft_with_claude(state: AdState) -> dict[str, str]:
+def _draft_with_claude(state: AdState) -> str:
     client = anthropic.Anthropic()
     response = client.messages.create(
         model="claude-sonnet-5",
-        max_tokens=800,
+        max_tokens=400,
         system=CONTENT_SYSTEM_PROMPT,
         messages=[{"role": "user", "content": _describe_listing(state)}],
     )
-    return json.loads(response.content[0].text)
+    return response.content[0].text.strip()
 
 
-def _draft_with_fallback(state: AdState) -> dict[str, str]:
+def _draft_with_fallback(state: AdState) -> str:
     facts = state.get("listing_facts", {})
     unit = state["unit"]
     rent = state["monthly_rent"]
     available = state.get("available_date", "now")
     features = facts.get("features", [])
-    feature_line = ", ".join(features)
 
     detail_bits = []
     if "bedrooms" in facts:
@@ -77,27 +70,14 @@ def _draft_with_fallback(state: AdState) -> dict[str, str]:
         detail_bits.append(f"{facts['bathrooms']}BA")
     details = "/".join(detail_bits)
 
-    headline = f"{unit} available {available} -- ${rent:,.0f}/mo"
-
-    content: dict[str, str] = {}
-    if "twitter" in state["platforms"]:
-        body = f"{headline}. {details} in DC."
-        if feature_line:
-            body += f" {feature_line}."
-        content["twitter"] = (body + " DM to tour!")[:280]
-    if "instagram" in state["platforms"]:
-        lines = [headline, details]
-        if feature_line:
-            lines.append(feature_line)
-        lines.append("#DCRentals #ApartmentHunting #WashingtonDC")
-        content["instagram"] = "\n".join(line for line in lines if line)
-    if "linkedin" in state["platforms"]:
-        sentence = f"Now available: {unit}, a {details} rental in DC for ${rent:,.0f}/mo, available {available}."
-        if feature_line:
-            sentence += f" Highlights: {feature_line}."
-        sentence += " Reach out if you or someone in your network is looking."
-        content["linkedin"] = sentence
-    return content
+    lines = [f"Now available: {unit} -- ${rent:,.0f}/mo, available {available}."]
+    if details:
+        lines[0] = f"Now available: {unit} ({details}) -- ${rent:,.0f}/mo, available {available}."
+    if features:
+        lines.append(f"Highlights: {', '.join(features)}.")
+    lines.append("Comment or message the page to schedule a tour!")
+    lines.append("#DCRentals #ApartmentHunting #WashingtonDC")
+    return "\n\n".join(lines)
 
 
 def content_creator_node(state: AdState) -> AdState:

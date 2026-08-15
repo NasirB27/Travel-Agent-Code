@@ -5,7 +5,7 @@ Graph shape (see docs/architecture.md, roadmap step 4):
 
     campaign_intake -> content_creator -> ad_approval* -> publish
 
-    * = human-in-the-loop interrupt; nothing publishes to any platform
+    * = human-in-the-loop interrupt; nothing posts to the Facebook Page
         without an explicit human decision.
 
 This graph is meant to be invoked when a unit goes vacant -- the "vacancy

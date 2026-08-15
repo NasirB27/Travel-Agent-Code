@@ -1,38 +1,64 @@
-"""Publishes approved ad content -- dry-run only for now.
+"""Publishes an approved ad to the landlord's Facebook Page.
 
-Real platform posting (Twitter/X, Instagram, LinkedIn) needs OAuth
-credentials and API integration this project doesn't have yet, so
-``dry_run`` defaults to True and live posting raises rather than silently
-no-opping or guessing at an API call. This mirrors how lease sending and
-lead-reply delivery are handled elsewhere in this repo: the human-approval
-gate is real, the external delivery integration is a deliberately separate,
-not-yet-built step (see docs/architecture.md).
+Dry-run by default (state["dry_run"] defaults to True): drafts and human
+review happen the same way either way, but the actual Graph API call is
+only made when dry_run is explicitly False. See README.md for how to
+obtain FACEBOOK_PAGE_ID and FACEBOOK_PAGE_ACCESS_TOKEN.
 """
 from __future__ import annotations
+
+import os
+
+import requests
 
 from graph.ad_state import AdState
 from graph.audit import log_event
 
+DEFAULT_GRAPH_API_VERSION = "v21.0"
+
+
+class FacebookPublishError(RuntimeError):
+    """Raised when a Page post can't be published (missing credentials or
+    the Graph API rejected the request)."""
+
+
+def _post_to_facebook_page(message: str) -> str:
+    page_id = os.environ.get("FACEBOOK_PAGE_ID")
+    access_token = os.environ.get("FACEBOOK_PAGE_ACCESS_TOKEN")
+    if not page_id or not access_token:
+        raise FacebookPublishError(
+            "FACEBOOK_PAGE_ID and FACEBOOK_PAGE_ACCESS_TOKEN must both be set "
+            "to publish live -- see README.md for how to obtain a Page "
+            "access token. Leave dry_run=True (the default) to draft/approve "
+            "content without posting."
+        )
+    api_version = os.environ.get("FACEBOOK_GRAPH_API_VERSION", DEFAULT_GRAPH_API_VERSION)
+
+    response = requests.post(
+        f"https://graph.facebook.com/{api_version}/{page_id}/feed",
+        data={"message": message, "access_token": access_token},
+        timeout=15,
+    )
+    payload = response.json()
+    if response.status_code >= 400 or "error" in payload:
+        error_message = payload.get("error", {}).get("message", response.text)
+        raise FacebookPublishError(f"Facebook Graph API rejected the post: {error_message}")
+    return payload["id"]
+
 
 def publish_node(state: AdState) -> AdState:
-    dry_run = state.get("dry_run", True)
-    approved_platforms = state.get("approved_platforms", [])
-    results: dict[str, str] = {}
-
-    for platform in approved_platforms:
-        if dry_run:
-            results[platform] = "simulated (dry-run, not actually posted)"
-        else:
-            raise NotImplementedError(
-                f"Live publishing to {platform!r} isn't wired up yet -- it needs "
-                "that platform's API credentials/OAuth flow. Keep dry_run=True "
-                "until that integration is built."
-            )
+    if not state.get("approved"):
+        result = "not published (rejected by human review)"
+    elif state.get("dry_run", True):
+        result = "simulated (dry-run, not actually posted)"
+    else:
+        post_id = _post_to_facebook_page(state["content"])
+        result = f"posted (facebook post id: {post_id})"
 
     log_event(
         state["campaign_id"],
         "ad_published",
         actor="system",
-        details={"dry_run": dry_run, "results": results},
+        details={"dry_run": state.get("dry_run", True), "result": result},
     )
-    return {**state, "publish_results": results}
+    return {**state, "publish_result": result}

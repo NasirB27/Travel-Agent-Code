@@ -80,6 +80,11 @@ and swap the content templates for listing flyers/copy. The existing
 dry-run + approval gate can be reused as-is and wired to the same HITL
 pattern as the rest of the graph.
 
+**Update**: the landlord advertises exclusively on their Facebook Page, so
+the implementation (`graph/ad_build.py`) dropped Twitter/Instagram/LinkedIn
+and posts only to Facebook, via the Graph API's `{page-id}/feed` endpoint
+once a human approves the drafted copy. See "Facebook setup" below.
+
 ### 3. Lead qualification & screening — `vercel-labs/lead-agent` + `tysonthomas9/realtor-agent`
 
 **Correction to the brief on both of these** — verified against the actual
@@ -184,18 +189,40 @@ grows to many more units.
    QUALIFIED lead's hand-off into the applicant pipeline (`graph/build.py`)
    is still manual.
 4. ✅ Ad automation with the dry-run/approval gate — see `graph/ad_build.py`.
-   Reimplements social-media-agents' content-creator/scheduler pattern
-   natively (its trend-scanner is astronomy-specific and its scheduler
-   needs real platform OAuth this project doesn't have yet). Drafts
-   per-platform copy (Twitter/X, Instagram, LinkedIn), gates on human
-   approval per platform, and "publishes" in dry-run only -- live posting
-   raises `NotImplementedError` until real platform API credentials are
-   wired up. The "vacancy watcher" trigger itself (detecting a unit went
-   vacant) is still manual/external to this graph.
+   Facebook-only (the landlord doesn't advertise elsewhere): drafts a
+   post, gates on human approval, and either simulates the post
+   (`dry_run=True`, the default) or publishes it for real via the
+   Facebook Graph API (`dry_run=False` + `FACEBOOK_PAGE_ID` /
+   `FACEBOOK_PAGE_ACCESS_TOKEN` — see "Facebook setup" below). The
+   "vacancy watcher" trigger itself (detecting a unit went vacant) is
+   still manual/external to this graph.
 5. Lightweight Concierge chatbot over the property knowledge base
    (`knowledge_base/property_facts.md` seeded, retrieval not yet wired up).
 6. Lease drafting, e-sign integration, and the audit log (basic JSONL audit
    log in place via `graph/audit.py`; e-sign integration still open).
+
+## Facebook setup
+
+`post_ad.py --live` and `dry_run=False` post through the Graph API's
+`POST /{page-id}/feed` endpoint, using a **Page Access Token** — not your
+personal user token, and not a short-lived token that expires in an hour.
+
+1. Create a Meta developer app at developers.facebook.com and add the
+   "Facebook Login for Business" and "Pages" products.
+2. Get a long-lived Page Access Token for the page you manage: exchange a
+   user token with the `pages_manage_posts` and `pages_read_engagement`
+   permissions for a long-lived user token, then call
+   `GET /{page-id}?fields=access_token` with that token to get the
+   corresponding long-lived Page token (these don't expire unless the
+   password/permissions change).
+3. Set `FACEBOOK_PAGE_ID` and `FACEBOOK_PAGE_ACCESS_TOKEN` as environment
+   variables wherever this runs. Treat the token as a secret — anyone with
+   it can post to your Page.
+4. Optionally set `FACEBOOK_GRAPH_API_VERSION` (defaults to `v21.0`) if
+   Meta deprecates that version later.
+
+Keep `dry_run=True` (the default) until these are set up; the scheduler
+node raises a clear error rather than guessing if credentials are missing.
 
 ## Open questions
 

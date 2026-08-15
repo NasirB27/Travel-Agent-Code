@@ -1,17 +1,13 @@
 """State schema for the vacancy-ad automation graph.
 
-Per docs/architecture.md, this reimplements Klaudiusz321/social-media-agents'
-content-creator/scheduler pattern natively rather than depending on that
-repo directly: its trend-scanner is built for astronomy content and its
-scheduler needs real platform credentials this project doesn't have yet.
-What's preserved is the actual safety property that made it worth citing --
-a dry-run mode and a human review step before anything publishes.
+Facebook-only by design: this landlord advertises exclusively on their
+Facebook Page, so the state is a single content draft rather than a
+per-platform dict/list (see docs/architecture.md for the earlier
+multi-platform version this replaced).
 """
 from __future__ import annotations
 
-from typing import Literal, TypedDict
-
-Platform = Literal["twitter", "instagram", "linkedin"]
+from typing import TypedDict
 
 
 class ListingFacts(TypedDict, total=False):
@@ -26,8 +22,7 @@ class AdState(TypedDict, total=False):
     monthly_rent: float
     available_date: str
     listing_facts: ListingFacts
-    platforms: list[Platform]
-    content: dict[str, str]  # platform -> drafted copy
-    approved_platforms: list[Platform]
+    content: str  # drafted Facebook post copy
+    approved: bool
     dry_run: bool
-    publish_results: dict[str, str]  # platform -> outcome
+    publish_result: str

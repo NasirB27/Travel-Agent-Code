@@ -183,7 +183,15 @@ grows to many more units.
    review entirely — discarding junk isn't a consequential decision). A
    QUALIFIED lead's hand-off into the applicant pipeline (`graph/build.py`)
    is still manual.
-4. Ad automation (fork social-media-agents) with the dry-run/approval gate.
+4. ✅ Ad automation with the dry-run/approval gate — see `graph/ad_build.py`.
+   Reimplements social-media-agents' content-creator/scheduler pattern
+   natively (its trend-scanner is astronomy-specific and its scheduler
+   needs real platform OAuth this project doesn't have yet). Drafts
+   per-platform copy (Twitter/X, Instagram, LinkedIn), gates on human
+   approval per platform, and "publishes" in dry-run only -- live posting
+   raises `NotImplementedError` until real platform API credentials are
+   wired up. The "vacancy watcher" trigger itself (detecting a unit went
+   vacant) is still manual/external to this graph.
 5. Lightweight Concierge chatbot over the property knowledge base
    (`knowledge_base/property_facts.md` seeded, retrieval not yet wired up).
 6. Lease drafting, e-sign integration, and the audit log (basic JSONL audit

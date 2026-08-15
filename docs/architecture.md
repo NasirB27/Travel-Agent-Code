@@ -177,7 +177,12 @@ grows to many more units.
 2. ✅ Application Parser + Screening Score nodes (the actual "tenant
    screening" in the branch name) — see `graph/nodes/application_parser.py`
    and `graph/nodes/screening.py`.
-3. Lead qualification/triage node for inbound DMs and emails.
+3. ✅ Lead qualification/triage node for inbound DMs and emails — see
+   `graph/lead_build.py`. Categorizes into QUALIFIED / FOLLOW_UP / SUPPORT /
+   SPAM, drafts a reply, and gates sending on human approval (SPAM skips
+   review entirely — discarding junk isn't a consequential decision). A
+   QUALIFIED lead's hand-off into the applicant pipeline (`graph/build.py`)
+   is still manual.
 4. Ad automation (fork social-media-agents) with the dry-run/approval gate.
 5. Lightweight Concierge chatbot over the property knowledge base
    (`knowledge_base/property_facts.md` seeded, retrieval not yet wired up).

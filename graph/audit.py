@@ -14,15 +14,19 @@ DEFAULT_AUDIT_LOG = Path("audit_log.jsonl")
 
 
 def log_event(
-    applicant_id: str,
+    entity_id: str,
     event: str,
     actor: str,
     details: dict | None = None,
     path: Path = DEFAULT_AUDIT_LOG,
 ) -> None:
+    """Append one audit entry. ``entity_id`` is whatever the event is about
+    (an applicant_id from the screening graph, a lead_id from the triage
+    graph, etc.) -- kept generic since this log is shared across pipelines.
+    """
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "applicant_id": applicant_id,
+        "entity_id": entity_id,
         "event": event,
         "actor": actor,
         "details": details or {},

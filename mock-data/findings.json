@@ -1,0 +1,114 @@
+{
+  "_notice": "SYNTHETIC DATA. All CVE IDs use the fictional CVE-2099-* range. Images, packages versions, and justifications are invented for illustration.",
+  "snapshotDate": "2026-09-15",
+  "findings": [
+    {
+      "id": "F-001", "cveId": "CVE-2099-10001", "packageName": "libxml2", "installedVersion": "2.9.13", "fixedVersion": null,
+      "severity": "Low", "cvss": 3.1, "epss": 0.02,
+      "imageName": "demo-registry.local/hardened/python311", "imageTag": "3.11.9", "baseImageLastRebuilt": "2026-08-20",
+      "justification": "Low-impact parser warning; only reachable with attacker-controlled DTDs, which are disabled."
+    },
+    {
+      "id": "F-002", "cveId": "CVE-2099-10002", "packageName": "ncurses", "installedVersion": "6.2", "fixedVersion": "6.2-p1",
+      "severity": "Low", "cvss": 2.4, "epss": 0.01,
+      "imageName": "demo-registry.local/hardened/nginx", "imageTag": "1.25.4", "baseImageLastRebuilt": "2026-09-01",
+      "justification": "Terminal library not used by the running service."
+    },
+    {
+      "id": "F-003", "cveId": "CVE-2099-10003", "packageName": "less", "installedVersion": "590", "fixedVersion": null,
+      "severity": "Medium", "cvss": 3.9, "epss": 0.05,
+      "imageName": "demo-registry.local/hardened/ubi9-minimal", "imageTag": "9.4", "baseImageLastRebuilt": "2026-03-01",
+      "justification": "Pager binary; no interactive shell in production."
+    },
+    {
+      "id": "F-004", "cveId": "CVE-2099-10004", "packageName": "openssl", "installedVersion": "3.0.7", "fixedVersion": "3.0.13",
+      "severity": "High", "cvss": 7.5, "epss": 0.31,
+      "imageName": "demo-registry.local/hardened/nginx", "imageTag": "1.25.4", "baseImageLastRebuilt": "2026-09-01",
+      "justification": "Will be addressed in next release."
+    },
+    {
+      "id": "F-005", "cveId": "CVE-2099-10005", "packageName": "glibc", "installedVersion": "2.34", "fixedVersion": "2.34-100",
+      "severity": "Critical", "cvss": 9.8, "epss": 0.72,
+      "imageName": "demo-registry.local/hardened/ubi9", "imageTag": "9.4", "baseImageLastRebuilt": "2026-08-28",
+      "justification": "Upstream patch available; rebuild scheduled."
+    },
+    {
+      "id": "F-006", "cveId": "CVE-2099-10006", "packageName": "curl", "installedVersion": "8.4.0", "fixedVersion": "8.9.1",
+      "severity": "Medium", "cvss": 6.1, "epss": 0.12,
+      "imageName": "demo-registry.local/hardened/postgres16", "imageTag": "16.3", "baseImageLastRebuilt": "2026-07-30",
+      "justification": "curl is present for health checks only."
+    },
+    {
+      "id": "F-007", "cveId": "CVE-2099-10007", "packageName": "zlib", "installedVersion": "1.2.13", "fixedVersion": null,
+      "severity": "Medium", "cvss": 5.5, "epss": 0.08,
+      "imageName": "demo-registry.local/hardened/openjdk17", "imageTag": "17.0.11", "baseImageLastRebuilt": "2026-04-02",
+      "justification": "No fix upstream yet."
+    },
+    {
+      "id": "F-008", "cveId": "CVE-2099-10008", "packageName": "sqlite", "installedVersion": "3.40.0", "fixedVersion": null,
+      "severity": "High", "cvss": 7.1, "epss": 0.15,
+      "imageName": "demo-registry.local/hardened/redis7", "imageTag": "7.2.5", "baseImageLastRebuilt": "2026-02-11",
+      "justification": "SQLite is a transitive dependency of a build tool left in the image."
+    },
+    {
+      "id": "F-009", "cveId": "CVE-2099-10009", "packageName": "expat", "installedVersion": "2.5.0", "fixedVersion": null,
+      "severity": "High", "cvss": 7.5, "epss": 0.09,
+      "imageName": "demo-registry.local/hardened/python311", "imageTag": "3.11.9", "baseImageLastRebuilt": "2026-08-20",
+      "justification": "The vulnerable code path is the XML_Parse entity-expansion routine, reachable only when parsing untrusted XML. This image runs a JSON-only REST service; the application never imports xml.* or pyexpat (verified via import audit and runtime tracing, attached). The expat shared object is loaded only by the stdlib, not by our code. Compensating control: read-only root filesystem and seccomp profile blocking the syscalls required for the published exploit."
+    },
+    {
+      "id": "F-010", "cveId": "CVE-2099-10010", "packageName": "busybox", "installedVersion": "1.36.0", "fixedVersion": null,
+      "severity": "High", "cvss": 8.1, "epss": 0.22,
+      "imageName": "demo-registry.local/hardened/alpine-base", "imageTag": "3.19", "baseImageLastRebuilt": "2026-09-05",
+      "justification": "Not applicable."
+    },
+    {
+      "id": "F-011", "cveId": "CVE-2099-10011", "packageName": "libarchive", "installedVersion": "3.6.2", "fixedVersion": null,
+      "severity": "Medium", "cvss": 6.5, "epss": 0.11,
+      "imageName": "demo-registry.local/hardened/gitlab-runner", "imageTag": "16.11", "baseImageLastRebuilt": "2026-07-15",
+      "justification": "libarchive is used by the runner to unpack job artifacts. Artifacts come from our own pipelines. We believe the risk is limited but have not confirmed whether malicious archives from forked-project pipelines can reach this path."
+    },
+    {
+      "id": "F-012", "cveId": "CVE-2099-10012", "packageName": "pcre2", "installedVersion": "10.40", "fixedVersion": null,
+      "severity": "Medium", "cvss": 5.3, "epss": 0.14,
+      "imageName": "demo-registry.local/hardened/nginx", "imageTag": "1.25.4", "baseImageLastRebuilt": "2026-09-01",
+      "justification": "Regex patterns in nginx config are static and authored by us, so ReDoS via user input seems unlikely."
+    },
+    {
+      "id": "F-013", "cveId": "CVE-2099-10013", "packageName": "libssh2", "installedVersion": "1.10.0", "fixedVersion": null,
+      "severity": "High", "cvss": 7.4, "epss": 0.19,
+      "imageName": "demo-registry.local/hardened/ansible-ee", "imageTag": "2.16", "baseImageLastRebuilt": "2026-08-10",
+      "justification": "SSH connections are only made to internal hosts over a management VLAN with host-key pinning enforced."
+    },
+    {
+      "id": "F-014", "cveId": "CVE-2099-10014", "packageName": "libtiff", "installedVersion": "4.4.0", "fixedVersion": null,
+      "severity": "Medium", "cvss": 6.5, "epss": 0.1,
+      "imageName": "demo-registry.local/hardened/imagemagick", "imageTag": "7.1.1", "baseImageLastRebuilt": "2026-08-25",
+      "justification": "TIFF decoding is disabled in policy.xml; only PNG and JPEG delegates are enabled."
+    },
+    {
+      "id": "F-015", "cveId": "CVE-2099-10015", "packageName": "log4j-core", "installedVersion": "2.17.0", "fixedVersion": null,
+      "severity": "Critical", "cvss": 9.0, "epss": 0.41,
+      "imageName": "demo-registry.local/hardened/elasticsearch", "imageTag": "8.14", "baseImageLastRebuilt": "2026-09-02",
+      "justification": "The vulnerable JNDI lookup class has been physically removed from the jar during the hardening build (see build step 14, zip -d). The class is absent at runtime, verified by a startup check that fails the container if it is present. Network egress from the pod is also denied by policy, blocking the callback required for exploitation."
+    },
+    {
+      "id": "F-016", "cveId": "CVE-2099-10016", "packageName": "libwebp", "installedVersion": "1.2.4", "fixedVersion": null,
+      "severity": "High", "cvss": 8.8, "epss": 0.26,
+      "imageName": "demo-registry.local/hardened/grafana", "imageTag": "11.1", "baseImageLastRebuilt": "2026-08-18",
+      "justification": "The Grafana server binary is statically linked against its own WebP decoder and does not load the system libwebp; libwebp is present only as a dependency of an unused OS package. Confirmed with ldd and /proc/<pid>/maps on a running container: libwebp.so is never mapped. Removal of the OS package is tracked for the next base rebuild."
+    },
+    {
+      "id": "F-017", "cveId": "CVE-2099-10017", "packageName": "perl", "installedVersion": "5.36.0", "fixedVersion": null,
+      "severity": "High", "cvss": 7.8, "epss": 0.13,
+      "imageName": "demo-registry.local/hardened/postgres16", "imageTag": "16.3", "baseImageLastRebuilt": "2026-07-30",
+      "justification": "Our scanner flags this in every image. It is a false positive."
+    },
+    {
+      "id": "F-018", "cveId": "CVE-2099-10018", "packageName": "krb5-libs", "installedVersion": "1.20.1", "fixedVersion": null,
+      "severity": "Medium", "cvss": 6.5, "epss": 0.1,
+      "imageName": "demo-registry.local/hardened/openjdk17", "imageTag": "17.0.11", "baseImageLastRebuilt": "2026-08-01",
+      "justification": "Kerberos is not configured in this image; there is no krb5.conf and the JVM is started with -Djavax.security.auth.useSubjectCredsOnly=true and no GSSAPI login modules. The library is a transitive dependency of the base OS image and is never loaded by the application."
+    }
+  ]
+}

@@ -72,6 +72,14 @@ pytest
 
 None of the suites need terminal input or network access.
 
+## Frontend scope
+
+There is no frontend in this repo, and none is planned. The backend/agent
+architecture is the entire deliverable. Demos and walkthroughs run through
+the CLI scripts above and the test suite, not a custom UI. If a chat UI is
+ever brought in from a reference project, it comes in only as far as type
+changes need it to compile: no new pages, components, styling, or reskin.
+
 ## Repo structure
 
 ```

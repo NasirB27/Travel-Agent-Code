@@ -28,7 +28,7 @@ def _route_after_screening_decision(state: ApplicantState) -> str:
     return "lease_draft" if state["decision"] == "approved" else "rejection_log"
 
 
-def build_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStateGraph:
+def applicant_workflow() -> StateGraph:
     graph = StateGraph(ApplicantState)
 
     graph.add_node("intake", intake_node)
@@ -52,4 +52,8 @@ def build_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStat
     graph.add_edge("lease_send_approval", END)
     graph.add_edge("rejection_log", END)
 
-    return graph.compile(checkpointer=checkpointer or InMemorySaver())
+    return graph
+
+
+def build_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStateGraph:
+    return applicant_workflow().compile(checkpointer=checkpointer or InMemorySaver())

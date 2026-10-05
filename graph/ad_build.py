@@ -27,7 +27,7 @@ from graph.nodes.content_creator import content_creator_node
 from graph.nodes.scheduler import publish_node
 
 
-def build_ad_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStateGraph:
+def ad_workflow() -> StateGraph:
     graph = StateGraph(AdState)
 
     graph.add_node("campaign_intake", campaign_intake_node)
@@ -41,4 +41,8 @@ def build_ad_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledS
     graph.add_edge("ad_approval", "publish")
     graph.add_edge("publish", END)
 
-    return graph.compile(checkpointer=checkpointer or InMemorySaver())
+    return graph
+
+
+def build_ad_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStateGraph:
+    return ad_workflow().compile(checkpointer=checkpointer or InMemorySaver())

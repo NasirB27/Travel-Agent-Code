@@ -55,6 +55,30 @@ offline fallbacks (see `graph/nodes/application_parser.py`,
 
 Every human decision is appended to `audit_log.jsonl` (gitignored).
 
+## LangGraph Studio
+
+`langgraph.json` registers all three graphs with the LangGraph dev server,
+so you can run them, inspect state, and answer each human-in-the-loop
+interrupt from [LangGraph Studio](https://docs.langchain.com/langgraph-platform/langgraph-studio)
+instead of the terminal prompts:
+
+```bash
+pip install -U setuptools "langgraph-cli[inmem]"
+cp .env.example .env    # optional: API keys; without them, nodes use offline fallbacks
+langgraph dev           # prints the API URL and a Studio link
+```
+
+| Graph | Example input | Resume values at each interrupt |
+|---|---|---|
+| `applicant_screening` | `{"applicant_id": "A1", "name": "Jane Doe", "unit": "Unit 3", "monthly_rent": 2100, "documents": [{"doc_type": "paystub", "content": "monthly_gross_income: 6200"}, {"doc_type": "credit_report", "content": "credit_score: 705\nevictions_last_7_years: 0"}]}` | `screening_decision`: `{"decision": "approved", "notes": ""}` (or `"rejected"`); `lease_send_approval`: `{"approved": true}` |
+| `lead_triage` | `{"lead_id": "L1", "source": "dm", "contact": "p@example.com", "message": "Is the 2BR still available?"}` | `lead_reply_approval`: `{"approved": true}`, optionally with `"edited_reply"` |
+| `vacancy_ad` | `{"campaign_id": "C1", "unit": "Unit 3", "monthly_rent": 2100, "available_date": "October 1", "listing_facts": {}}` | `ad_content_approval`: `{"approved": true}`, optionally with `"edited_content"` |
+
+`vacancy_ad` stays in dry-run unless the input sets `"dry_run": false`.
+Studio graphs come from `graph/studio.py`, which compiles the same
+workflows as the CLI scripts but without a checkpointer, because the server
+provides its own persistence.
+
 ## Tests
 
 ```bash
@@ -69,6 +93,8 @@ pytest
 - `tests/test_ad_graph.py` drives the ad graph through approval, edited
   copy, rejection, and the live Facebook Graph API path (with
   `requests.post` monkeypatched — no real network calls or real posts).
+- `tests/test_studio.py` checks that every graph in `langgraph.json`
+  resolves and is compiled without a checkpointer.
 
 None of the suites need terminal input or network access.
 
@@ -76,7 +102,7 @@ None of the suites need terminal input or network access.
 
 There is no frontend in this repo, and none is planned. The backend/agent
 architecture is the entire deliverable. Demos and walkthroughs run through
-the CLI scripts above and the test suite, not a custom UI. If a chat UI is
+LangGraph Studio, the CLI scripts above, and the test suite, not a custom UI. If a chat UI is
 ever brought in from a reference project, it comes in only as far as type
 changes need it to compile: no new pages, components, styling, or reskin.
 
@@ -91,6 +117,7 @@ graph/
   build.py                       # wires the applicant-screening StateGraph
   lead_build.py                     # wires the lead-triage StateGraph
   ad_build.py                          # wires the ad-automation StateGraph
+  studio.py                              # checkpointer-free graphs for langgraph.json
   nodes/
     intake.py
     application_parser.py    # document -> financials (Claude, or offline fallback)
@@ -107,6 +134,8 @@ graph/
     scheduler.py                              # dry-run sim, or real Facebook Graph API post
 knowledge_base/
   property_facts.md       # seed for the future concierge chatbot's RAG source
+langgraph.json             # LangGraph dev server / Studio config
+.env.example               # optional env vars for `langgraph dev`
 docs/
   architecture.md         # full architecture plan and roadmap
 main.py                    # applicant-screening CLI demo

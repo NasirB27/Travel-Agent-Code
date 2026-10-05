@@ -25,7 +25,7 @@ def _route_after_classification(state: LeadState) -> str:
     return "spam_log" if state["category"] == "SPAM" else "draft_reply"
 
 
-def build_lead_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStateGraph:
+def lead_workflow() -> StateGraph:
     graph = StateGraph(LeadState)
 
     graph.add_node("lead_intake", lead_intake_node)
@@ -45,4 +45,8 @@ def build_lead_graph(checkpointer: BaseCheckpointSaver | None = None) -> Compile
     graph.add_edge("reply_approval", END)
     graph.add_edge("spam_log", END)
 
-    return graph.compile(checkpointer=checkpointer or InMemorySaver())
+    return graph
+
+
+def build_lead_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStateGraph:
+    return lead_workflow().compile(checkpointer=checkpointer or InMemorySaver())

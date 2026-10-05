@@ -1,0 +1,9 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "applicant_screening": "./graph/studio.py:applicant_screening",
+    "lead_triage": "./graph/studio.py:lead_triage",
+    "vacancy_ad": "./graph/studio.py:vacancy_ad"
+  },
+  "env": ".env"
+}

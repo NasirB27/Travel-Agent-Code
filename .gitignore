@@ -5,3 +5,4 @@ venv/
 .env
 audit_log.jsonl
 .pytest_cache/
+.langgraph_api/
